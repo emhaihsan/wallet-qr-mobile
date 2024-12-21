@@ -61,6 +61,8 @@ export default function HomeScreen() {
                     if (scannedCodes && scannedCodes.length > 0) {
                         const { type, data } = scannedCodes[0];
                         setScanResult({ type, data });
+                        setModalVisible(false);
+                        navigation.navigate('Detected', { qrData: data });
                     } else {
                         alert('No QR code found in the image');
                         setModalVisible(false);

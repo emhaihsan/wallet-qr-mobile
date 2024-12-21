@@ -17,6 +17,28 @@ export default function ScannerScreen() {
     const [modalVisible, setModalVisible] = useState(false);
     const [scanResult, setScanResult] = useState({ type: '', data: '' });
 
+    useEffect(() => {
+        let timeoutId: NodeJS.Timeout;
+        if (scanResult && scanResult.data) {
+            timeoutId = setTimeout(() => {
+                setModalVisible(false);
+                navigation.navigate('Detected', { qrData: scanResult.data });
+            }, 1000);
+        }
+        return () => {
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
+        };
+    }, [scanResult, navigation]);
+
+    const handleBarCodeScanned = ({ type, data }: { type: string; data: string }) => {
+        if (scanned) return;
+        setScanned(true);
+        setScanResult({ type, data });
+        setModalVisible(true);
+    };
+
     if (!permission) {
         return <View />;
     }
@@ -40,13 +62,6 @@ export default function ScannerScreen() {
         );
     }
 
-    const handleBarCodeScanned = ({ type, data }: { type: string; data: string }) => {
-        if (scanned) return;
-        setScanned(true);
-        setScanResult({ type, data });
-        setModalVisible(true);
-    };
-
     return (
         <View style={styles.container}>
             <CameraView
@@ -69,6 +84,7 @@ export default function ScannerScreen() {
                             onPress={() => {
                                 setScanned(false);
                                 setModalVisible(false);
+                                setScanResult({ type: '', data: '' });
                             }}
                         >
                             <Text style={styles.buttonText}>SCAN AGAIN</Text>
@@ -95,15 +111,6 @@ export default function ScannerScreen() {
                             <Text style={styles.resultLabel}>Data:</Text>
                             <Text style={styles.resultText}>{scanResult.data}</Text>
                         </View>
-                        <TouchableOpacity 
-                            style={styles.modalButton}
-                            onPress={() => {
-                                setModalVisible(false);
-                                setScanned(false);
-                            }}
-                        >
-                            <Text style={styles.buttonText}>CLOSE</Text>
-                        </TouchableOpacity>
                     </LinearGradient>
                 </View>
             </Modal>
@@ -239,12 +246,5 @@ const styles = StyleSheet.create({
         color: '#ffffff',
         fontSize: 16,
         marginBottom: 15,
-    },
-    modalButton: {
-        backgroundColor: '#4fc3f7',
-        paddingVertical: 12,
-        paddingHorizontal: 30,
-        borderRadius: 25,
-        alignSelf: 'center',
     },
 });
